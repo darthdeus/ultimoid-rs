@@ -1,78 +1,75 @@
-#[macro_use]
-extern crate serde_derive;
-extern crate serde;
-extern crate serde_json;
-extern crate rmp_serialize;
-extern crate rmp_serde as rmps;
+extern crate pancurses;
+extern crate time;
 
-//extern crate rmp_serialize;
+use pancurses::*;
 
-#[derive(Serialize, Deserialize, Debug)]
-enum Class {
-    Mage,
-    Warrior,
-    Rogue,
-    Druid
+// #[derive(Debug)]
+// struct Position {
+//     x: u32,
+//     y: u32
+// }
+//
+// #[derive(Debug)]
+// struct Player {
+//     position: Position,
+//     name: String
+// }
+//
+// #[derive(Debug)]
+// struct MainState {
+//     players: Vec<Player>
+// }
+//
+fn timestamp() -> f64 {
+    let timespec = time::get_time();
+    // 1459440009.113178
+    let mills: f64 = timespec.sec as f64 + (timespec.nsec as f64 / 1000.0 / 1000.0 / 1000.0);
+    mills
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct Player {
-    name: String,
-    position: Position,
-    class: Class,
+fn update() {
+
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct Position {
-    x: i32,
-    y: i32
+fn render() {
+
 }
 
-use std::net::UdpSocket;
+fn main() {
+    let window = initscr();
 
-fn main() -> std::io::Result<()> {
-    {
-        let player = Player {
-            name: "John Doe".to_string(),
-            class: Class::Rogue,
-            position: Position {
-                x: 3, y: 4
-            }
-        };
+    const FPS: i32 = 10;
 
-        let player_bytes = rmps::to_vec(&Class::Rogue).unwrap();
+    let MS_PER_UPDATE: f64 = 1f64 / FPS as f64;
+    let mut previous = timestamp();
+    let mut lag = 0f64;
 
-        println!("player bytes: {:?}", String::from_utf8_lossy(&player_bytes));
+    loop {
+        let current = timestamp();
+        let elapsed = current - previous;
+        previous = current;
+        lag += elapsed;
 
-        let serialized = serde_json::to_string(&player).unwrap();
+        window.clear();
 
-        println!("player = {}", serialized);
+        window.printw(format!("BEFORE UPDATE"));
 
+        while lag >= MS_PER_UPDATE {
+            window.printw(format!("updating {:.4} ... {}", lag, elapsed));
+            update();
+            lag -= MS_PER_UPDATE;
+        }
 
-        let socket = UdpSocket::bind("127.0.0.1:4313").unwrap();
+        window.printw("RENDER");
+        window.refresh();
+        render();
 
-
-        let mut buf = [0; 10];
-
-        let (amt, src) = socket.recv_from(&mut buf)?;
-
-        println!("Prislo mi `{}` bytu {}",
-               String::from_utf8_lossy(&buf[..amt]),
-               amt);
-
-        // let buf = &mut buf[..amt];
-        // buf.reverse();
-
-        let mut kufr = [0u8; 64];
-
-        let tuplik = (42u8, "kolecko", 0.3, "ge");
-
-//        tuplik.encode(&mut Encoder::new(&mut &mut kufr[..])).unwrap();
-
-        socket.send_to(&player_bytes, &src)?;
-
-        // println!("Hello, world!");
+        // window.printw(format!("Hello Rust {}, el {}", i, dt));
+        // window.getch();
     }
+    // let pos = Position { x: 3, y: 4 };
+    // println!("hehe {:?}", pos);
 
-    Ok(())
+    endwin();
 }
+
