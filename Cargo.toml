@@ -12,3 +12,7 @@ serde_json = "1.0.2"
 ggez = "0.4.3"
 pancurses = "0.16"
 time = "*"
+
+piston2d-graphics = "*"
+piston_window = "0.70.0"
+itertools = "*"
