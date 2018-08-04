@@ -1,75 +1,65 @@
-extern crate pancurses;
-extern crate time;
+extern crate ggez;
 
-use pancurses::*;
+use ggez::*;
+use ggez::graphics::{DrawMode, Point2, Rect};
 
-// #[derive(Debug)]
-// struct Position {
-//     x: u32,
-//     y: u32
-// }
-//
-// #[derive(Debug)]
-// struct Player {
-//     position: Position,
-//     name: String
-// }
-//
-// #[derive(Debug)]
-// struct MainState {
-//     players: Vec<Player>
-// }
-//
-fn timestamp() -> f64 {
-    let timespec = time::get_time();
-    // 1459440009.113178
-    let mills: f64 = timespec.sec as f64 + (timespec.nsec as f64 / 1000.0 / 1000.0 / 1000.0);
-    mills
+struct Position {
+    x: u32,
+    y: u32
 }
 
-fn update() {
-
+struct Player {
+    position: Position,
+    name: String
 }
 
-fn render() {
-
+struct MainState {
+    pos_x: f32,
+    players: Vec<Player>
 }
 
-fn main() {
-    let window = initscr();
-
-    const FPS: i32 = 10;
-
-    let MS_PER_UPDATE: f64 = 1f64 / FPS as f64;
-    let mut previous = timestamp();
-    let mut lag = 0f64;
-
-    loop {
-        let current = timestamp();
-        let elapsed = current - previous;
-        previous = current;
-        lag += elapsed;
-
-        window.clear();
-
-        window.printw(format!("BEFORE UPDATE"));
-
-        while lag >= MS_PER_UPDATE {
-            window.printw(format!("updating {:.4} ... {}", lag, elapsed));
-            update();
-            lag -= MS_PER_UPDATE;
-        }
-
-        window.printw("RENDER");
-        window.refresh();
-        render();
-
-        // window.printw(format!("Hello Rust {}, el {}", i, dt));
-        // window.getch();
+impl MainState {
+    fn new(_ctx: &mut Context) -> GameResult<MainState> {
+        let p1 = Player {
+            name: "john".to_string(),
+            position: Position { x: 3, y: 4 }
+        };
+        let s = MainState { pos_x: 0.0, players: vec![p1] };
+        Ok(s)
     }
-    // let pos = Position { x: 3, y: 4 };
-    // println!("hehe {:?}", pos);
+}
 
-    endwin();
+impl event::EventHandler for MainState {
+    fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
+        self.pos_x = self.pos_x % 800.0 + 2.0;
+        Ok(())
+    }
+
+    fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+        graphics::clear(ctx);
+
+        for x in 0..10 {
+            for y in 0..10 {
+                const grid_size: f32 = 20.0;
+
+                let rect = Rect::new((grid_size + 1f32) * x as f32, (grid_size + 1f32) * y as f32, grid_size, grid_size);
+                graphics::rectangle(ctx, DrawMode::Fill, rect);
+            }
+        }
+        graphics::circle(ctx,
+                         DrawMode::Fill,
+                         Point2::new(self.pos_x, 380.0),
+                         100.0,
+                         2.0)?;
+        graphics::present(ctx);
+        Ok(())
+    }
+}
+
+pub fn main() {
+    let c = conf::Conf::new();
+    let ctx = &mut Context::load_from_conf("super_simple", "ggez", c).unwrap();
+    let state = &mut MainState::new(ctx).unwrap();
+    event::run(ctx, state).unwrap();
 }
 
