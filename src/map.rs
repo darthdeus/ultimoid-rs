@@ -1,25 +1,25 @@
-use std::ops::{Add, Div, Neg};
+use std::ops::{Add, Sub, Div, Neg};
 
 #[derive(Debug, Copy, Clone)]
-enum MapItem {
+pub enum MapItem {
     Empty,
     Tree,
 }
 
-struct GameMap {
+pub struct GameMap {
     size: Coord,
     grid: Vec<MapItem>,
 }
 
 impl GameMap {
-    fn new(size: Coord) -> GameMap {
+    pub fn new(size: Coord) -> GameMap {
         let item_count = (size.x * size.y) as usize;
         let mut grid = Vec::with_capacity(item_count);
         grid.resize(item_count, MapItem::Empty);
         GameMap { size, grid }
     }
 
-    fn at(&self, point: Coord) -> MapItem {
+    pub fn at(&self, point: Coord) -> MapItem {
         let idx = (point.x + point.y * self.size.x) as usize;
         self.grid[idx]
     }
@@ -35,6 +35,15 @@ impl ScreenPoint {
     pub fn new(x: f64, y: f64) -> ScreenPoint {
         ScreenPoint { x, y }
     }
+
+    pub fn flip_y(self) -> ScreenPoint {
+        Self::new(self.x, -self.y)
+    }
+
+    pub fn zero() -> ScreenPoint {
+        Self::new(0f64, 0f64)
+    }
+
 }
 
 impl Add for ScreenPoint {
@@ -42,6 +51,13 @@ impl Add for ScreenPoint {
 
     fn add(self, rhs: ScreenPoint) -> ScreenPoint {
         ScreenPoint::new(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+impl Sub for ScreenPoint {
+    type Output = ScreenPoint;
+
+    fn sub(self, rhs: ScreenPoint) -> ScreenPoint {
+        ScreenPoint::new(self.x - rhs.x, self.y - rhs.y)
     }
 }
 
