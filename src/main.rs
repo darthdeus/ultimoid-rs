@@ -8,7 +8,7 @@ mod map;
 
 use map::*;
 use piston_window::*;
-use graphics::math::Matrix2d;
+// use graphics::math::Matrix2d;
 use piston_window::Button::Keyboard;
 use piston_window::MouseButton;
 use piston_window::Key;
@@ -27,7 +27,7 @@ fn main() {
 
     let mut rmb_pressed = false;
     let mut move_acc = 0;
-    let mut cursor = ScreenPoint::zero();
+    let mut cursor = Vector2::new(0f64, 0f64);
 
     let iso_rot = graphics::math::rotate_radians(3.14 / 4.0);
 
@@ -38,7 +38,7 @@ fn main() {
         event.mouse_cursor(|x, y| {
 //            let [x, y] = graphics::math::transform_vec(graphics::math::rotate_radians(3.14 / 4.0)
 //                                                       , [x, -y]);
-            cursor = ScreenPoint::new(x, y);
+            cursor = Vector2::new(x, y);
         });
 
         if let Some(Button::Mouse(MouseButton::Right)) = event.press_args() {
@@ -53,8 +53,6 @@ fn main() {
         };
 
         if rmb_pressed { move_acc += 1; }
-
-//        println!("rmb {}, move acc {}", rmb_pressed, move_acc);
 
         match event.press_args() {
             Some(Keyboard(Key::Left)) => { player_coord.x -= 1 }
@@ -81,10 +79,10 @@ fn main() {
 
             let player_point = coord_to_screen_point(player_coord);
 
-            let offset = -player_point + screen_size / 2;
+            let offset = -player_point + screen_size / 2f64;
 
-            let trans = graphics::math::multiply(iso_rot,
-                                                 context.transform);
+            // let trans = graphics::math::multiply(iso_rot,
+            //                                      context.transform);
 
             let trans = context.transform;
 
@@ -101,7 +99,8 @@ fn main() {
 
             let player_draw_at = player_point + offset;
 
-            let direction = (cursor - player_draw_at).flip_y();
+            let direction = Vector2::new(cursor.x - player_draw_at.x,
+                                         -(cursor.y - player_draw_at.y));
 
             if move_acc >= 110 {
                 if direction.x > 0f64 {

@@ -29,6 +29,12 @@ struct Position {
     y: i32
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+struct Datagram {
+    mode: DatagramType,
+    payload: byte,
+}
+
 use std::net::UdpSocket;
 
 fn main() -> std::io::Result<()> {
